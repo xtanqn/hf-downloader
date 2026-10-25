@@ -4,7 +4,13 @@
 
 专为国内网络环境设计：默认走 `hf-mirror.com` 镜像，同时支持自定义镜像地址。
 
-![界面截图](docs/screenshot-dark.png)
+<div align="center">
+  <img src="docs/screenshot-dark.png" alt="界面截图" width="880">
+</div>
+
+<p align="center">
+  <sub>深色主题 · 左侧目录树 + 右侧文件列表 · 底部下载队列</sub>
+</p>
 
 ## 为什么做这个
 
