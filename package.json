@@ -1,0 +1,18 @@
+{
+  "name": "hf-downloader",
+  "version": "1.0.4",
+  "private": true,
+  "description": "HF 模型下载器 —— 从 hf-mirror.com 浏览并下载 Hugging Face 模型文件",
+  "main": "shell/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "icon": "node scripts/make-icon.js",
+    "build:dir": "electron-builder --config config/electron-builder.json --dir",
+    "build:portable": "node scripts/build-portable.js"
+  },
+  "devDependencies": {
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3"
+  }
+}
