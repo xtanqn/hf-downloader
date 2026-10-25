@@ -93,7 +93,17 @@ SDXL 仓库有 57 个文件、71.6 GB，但你通常只需要其中几个：
 | 单文件分块 | 8 | 单个文件开几个连接 |
 | 总连接数 | 16 | 全局 socket 上限，弱网建议调低到 8 |
 
-**目录结构两种模式：**
+**目录结构三种模式：**
+
+```
+带仓库名：下载\stable-diffusion-xl-base-1.0\vae\model.safetensors
+扁平化：  下载\stable-diffusion-xl-base-1.0\model.safetensors
+ComfyUI： E:\ComfyUI\models\vae\model.safetensors   ← 直接进对应分类
+```
+
+**ComfyUI 分类目录**：把路径设为 ComfyUI 的 `models` 文件夹后，按仓库内目录自动归类——
+`vae\*` → `models\vae\`，`unet\*` → `models\unet\`，`lora` → `models\loras\`，
+根目录的大模型文件 → `models\checkpoints\`，无法归类的进 `models\_其他\`。
 
 ```
 带仓库名：下载\stable-diffusion-xl-base-1.0\vae\model.safetensors
