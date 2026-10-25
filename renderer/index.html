@@ -161,8 +161,13 @@
         </div>
         <div id="comfyui-hint" class="hint hidden">
           下载目录会用上面这个路径。仓库里 vae\ 目录的文件会自动放到 models\vae\，
-          unet\ 放到 models\unet\，lora 放到 models\loras\，根目录的大模型文件放到 models\checkpoints\。
+          unet\ 放到 models\diffusion_models\，lora 放到 models\loras\，根目录的大模型文件放到 models\checkpoints\。
         </div>
+        <label id="legacy-unet-row" class="chk-label hidden" style="margin-top:8px;">
+          <input type="checkbox" id="set-legacy-unet">
+          使用旧版目录名 <code style="font-family:var(--mono);font-size:11.5px;">unet\</code>
+          （2024 年中之前的 ComfyUI）
+        </label>
       </div>
 
       <div class="field">
