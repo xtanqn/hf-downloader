@@ -150,6 +150,18 @@
             <input type="radio" name="layout" value="flat" id="set-layout-flat">
             <span>扁平化<em>下载\仓库名\xxx.safetensors（去掉中间目录）</em></span>
           </label>
+          <label class="radio">
+            <input type="radio" name="layout" value="comfyui" id="set-layout-comfyui">
+            <span>ComfyUI 分类目录<em>按 HF 目录自动归类：vae→vae\、unet→unet\、lora→loras\</em></span>
+          </label>
+        </div>
+        <div id="comfyui-dir-row" class="row hidden" style="margin-top:8px;">
+          <input id="set-comfyui-dir" type="text" readonly placeholder="选择 ComfyUI 的 models 文件夹，如 E:\ComfyUI\models">
+          <button id="btn-pick-comfyui" class="mini-btn">浏览…</button>
+        </div>
+        <div id="comfyui-hint" class="hint hidden">
+          下载目录会用上面这个路径。仓库里 vae\ 目录的文件会自动放到 models\vae\，
+          unet\ 放到 models\unet\，lora 放到 models\loras\，根目录的大模型文件放到 models\checkpoints\。
         </div>
       </div>
 
