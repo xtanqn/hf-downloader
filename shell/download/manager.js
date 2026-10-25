@@ -244,7 +244,10 @@ class DownloadManager {
     for (const t of this.tasks) {
       if (this.running.size >= this.maxFiles) break;
       if (t.status !== 'pending' && t.status !== 'queued') continue;
+      // 同一任务绝不能被启动两次：并发写同一个文件会互相踩踏，
+      // 表现为"下载完成"和"写入超出分块范围"同时出现。
       if (this.running.has(t.id)) continue;
+      if (t._runPromise && t.status !== 'pending') continue;
 
       this.running.add(t.id);
       startTask(t, this)
