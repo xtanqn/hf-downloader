@@ -19,7 +19,8 @@ const { SpeedMeter } = require('./meter');
 const { startTask, PART_SUFFIX } = require('./task');
 const { readState, writeStateAtomic, validateOnLoad } = require('./state');
 const { resolveUrl } = require('../net/hf-api');
-const { safeRelPath, isInside, longPath } = require('../util/pathsafe');
+const { safeRelPath, isInside, longPath, safeSegment } = require('../util/pathsafe');
+const { comfyRelPath } = require('../comfyui-map');
 const { HfError } = require('../net/errors');
 
 const PROGRESS_INTERVAL = 250;
@@ -144,24 +145,43 @@ class DownloadManager {
    */
   enqueue(items, ctx) {
     const c = ctx || {};
-    const destRoot = c.destDir || this.settings.destDir;
+    const layout = this.settings.layout || 'repo';
+    // ComfyUI 模式的根目录：优先专用设置，为空时退回 destDir
+    const comfyRoot = layout === 'comfyui'
+      ? (this.settings.comfyuiDir || this.settings.destDir)
+      : '';
+    const destRoot = c.destDir || (layout === 'comfyui' ? comfyRoot : this.settings.destDir);
     if (!destRoot) throw new HfError('NO_DEST', '请先设置下载目录');
 
     const mirror = this.settings.mirror;
-    const flat = this.settings.flatLayout === true;
     const repoName = String(c.repo).split('/')[1] || 'model';
 
     const added = [];
     const skipped = [];
 
     for (const it of items) {
-      // 目标路径：带仓库名 或 扁平化
-      const rel = safeRelPath(it.path);
-      const base = flat ? path.join(destRoot, repoName) : path.join(destRoot, repoName);
-      const finalFile = flat ? path.join(base, rel) : path.join(base, rel);
+      let finalFile;
+      let rootForCheck = destRoot;
 
-      // 防路径穿越：仓库里理论上没有 ../，但不能只靠"理论上"
-      if (!isInside(destRoot, finalFile)) {
+      if (layout === 'comfyui') {
+        // vae/diffusion_pytorch_model.safetensors → {models}\vae\diffusion_pytorch_model.safetensors
+        const mapped = comfyRelPath(it.path);
+        if (!mapped) {
+          skipped.push({ path: it.path, reason: '无法归类到 ComfyUI 目录' });
+          continue;
+        }
+        finalFile = path.join(destRoot, mapped);
+      } else if (layout === 'flat') {
+        // 去掉仓库名子目录，直接放 destRoot 下（保留仓库内子结构）
+        finalFile = path.join(destRoot, safeRelPath(it.path));
+      } else {
+        // repo：{dest}\{仓库名}\{原路径}
+        finalFile = path.join(destRoot, safeSegment(repoName), safeRelPath(it.path));
+        rootForCheck = destRoot;
+      }
+
+      // 防路径穿越：算出的最终路径必须还在根目录内
+      if (!isInside(rootForCheck, finalFile)) {
         skipped.push({ path: it.path, reason: '路径越界' });
         continue;
       }
