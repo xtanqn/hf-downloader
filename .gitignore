@@ -1,0 +1,26 @@
+# 依赖
+node_modules/
+
+# 便携 Node 运行时（开发用，不入库）
+node/
+
+# 打包产物
+dist/
+
+# 运行时数据（用户配置、下载记录、日志）
+_数据/
+
+# 临时文件
+_临时/
+*.log
+*.tmp
+
+# 系统文件
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
