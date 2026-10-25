@@ -1,0 +1,346 @@
+/* ===== 主题变量 =====
+   深色是默认；浅色通过 body.light 覆盖。
+   所有组件只引用变量，不做任何硬编码颜色（徽章的 rgba 除外，
+   它们按饱和度定义，两种主题下都可读，见文件末尾的浅色覆盖）。 */
+:root {
+  --bg-0: #15181d;
+  --bg-1: #1b1f27;
+  --bg-2: #222732;
+  --bg-3: #2a303c;
+  --bg-hover: #262c37;
+  --bg-active: #2f3745;
+
+  --line: #2c3340;
+  --line-soft: #242a34;
+
+  --fg-0: #e6e9ef;
+  --fg-1: #9aa4b5;
+  --fg-2: #6b7688;
+
+  --accent: #4c8dff;
+  --accent-dim: #3a6fd0;
+  --accent-bg: rgba(76, 141, 255, 0.14);
+
+  --ok: #3ecf8e;
+  --warn: #f5a623;
+  --err: #f2555a;
+
+  --radius: 6px;
+  --radius-sm: 4px;
+
+  --mono: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+
+  /* 徽章配色（两种主题共用色相，浅色下有覆盖） */
+  --badge-st-bg: rgba(62, 207, 142, 0.16);   --badge-st-fg: #5fdba7;
+  --badge-bin-bg: rgba(245, 166, 35, 0.16);  --badge-bin-fg: #f0b350;
+  --badge-json-bg: rgba(76, 141, 255, 0.16); --badge-json-fg: #7aa9ff;
+  --badge-txt-bg: rgba(154, 164, 181, 0.16); --badge-txt-fg: #9aa4b5;
+  --badge-onnx-bg: rgba(196, 118, 255, 0.16);--badge-onnx-fg: #c78cff;
+  --badge-gguf-bg: rgba(255, 118, 168, 0.16);--badge-gguf-fg: #ff8ab5;
+  --badge-img-bg: rgba(120, 200, 255, 0.14); --badge-img-fg: #8fd0ff;
+  --badge-bin2-bg: rgba(154, 164, 181, 0.12);--badge-bin2-fg: #6b7688;
+}
+
+/* ===== 浅色主题 ===== */
+body.light {
+  --bg-0: #f5f6f8;
+  --bg-1: #ffffff;
+  --bg-2: #eef0f4;
+  --bg-3: #e3e6ec;
+  --bg-hover: #e9ecf2;
+  --bg-active: #dde2ea;
+
+  --line: #d5dae2;
+  --line-soft: #e2e6ec;
+
+  --fg-0: #1c2128;
+  --fg-1: #4d576a;
+  --fg-2: #8a93a5;
+
+  --accent: #2f6fe0;
+  --accent-dim: #2559b8;
+  --accent-bg: rgba(47, 111, 224, 0.10);
+
+  --ok: #159c62;
+  --warn: #c77d08;
+  --err: #d63a3f;
+
+  --badge-st-bg: rgba(21, 156, 98, 0.13);    --badge-st-fg: #0d7a4b;
+  --badge-bin-bg: rgba(199, 125, 8, 0.13);   --badge-bin-fg: #9a6206;
+  --badge-json-bg: rgba(47, 111, 224, 0.12); --badge-json-fg: #2559b8;
+  --badge-txt-bg: rgba(77, 87, 106, 0.12);   --badge-txt-fg: #4d576a;
+  --badge-onnx-bg: rgba(139, 68, 211, 0.11); --badge-onnx-fg: #7a3cc0;
+  --badge-gguf-bg: rgba(198, 44, 116, 0.11); --badge-gguf-fg: #b02768;
+  --badge-img-bg: rgba(10, 132, 210, 0.12);  --badge-img-fg: #0a6fb0;
+  --badge-bin2-bg: rgba(77, 87, 106, 0.09);  --badge-bin2-fg: #6b7484;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--fg-0);
+  font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+::selection {
+  background: var(--accent-bg);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #333b49;
+  border-radius: 5px;
+  border: 2px solid var(--bg-0);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #414b5c;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 输入类元素统一字体 */
+input, button, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="number"] {
+  background: var(--bg-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  color: var(--fg-0);
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.12);
+}
+input::placeholder {
+  color: var(--fg-2);
+}
+input[readonly] {
+  color: var(--fg-1);
+  cursor: default;
+}
+
+/* 复选框 */
+input[type="checkbox"] {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #3d4757;
+  border-radius: 3px;
+  background: var(--bg-0);
+  cursor: pointer;
+  position: relative;
+  flex: 0 0 auto;
+  transition: background 0.12s, border-color 0.12s;
+}
+input[type="checkbox"]:hover {
+  border-color: #56637a;
+}
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:indeterminate {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type="checkbox"]:indeterminate::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  width: 7px;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+/* 单选 */
+input[type="radio"] {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #3d4757;
+  border-radius: 50%;
+  background: var(--bg-0);
+  cursor: pointer;
+  position: relative;
+  flex: 0 0 auto;
+}
+input[type="radio"]:checked {
+  border-color: var(--accent);
+}
+input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ===== 按钮 ===== */
+.btn {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--fg-0);
+  border-radius: var(--radius-sm);
+  padding: 7px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+.btn:hover:not(:disabled) {
+  background: var(--bg-3);
+  border-color: #3a4352;
+}
+.btn:active:not(:disabled) {
+  background: var(--bg-hover);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+.btn.primary:hover:not(:disabled) {
+  background: #5b97ff;
+  border-color: #5b97ff;
+}
+.btn.primary:active:not(:disabled) {
+  background: var(--accent-dim);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--fg-1);
+}
+.btn.ghost:hover:not(:disabled) {
+  background: var(--bg-2);
+  color: var(--fg-0);
+}
+.btn.sm {
+  padding: 6px 14px;
+  font-size: 12.5px;
+}
+
+.mini-btn {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg-1);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.mini-btn:hover {
+  background: var(--bg-2);
+  color: var(--fg-0);
+}
+.mini-btn.danger:hover {
+  border-color: var(--err);
+  color: var(--err);
+  background: rgba(242, 85, 90, 0.1);
+}
+
+.mini {
+  border: none;
+  background: transparent;
+  color: var(--fg-1);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1;
+  transition: background 0.12s, color 0.12s;
+}
+.mini:hover {
+  background: var(--bg-3);
+  color: var(--fg-0);
+}
+
+/* ===== 通用小件 ===== */
+.pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--bg-3);
+  color: var(--fg-1);
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.pill.warn {
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--warn);
+}
+.pill.ok {
+  background: rgba(62, 207, 142, 0.15);
+  color: var(--ok);
+}
+.pill.err {
+  background: rgba(242, 85, 90, 0.15);
+  color: var(--err);
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
