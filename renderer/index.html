@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';">
+<title>HF 模型下载器</title>
+<link rel="stylesheet" href="styles/theme.css">
+<link rel="stylesheet" href="styles/layout.css">
+<link rel="stylesheet" href="styles/widgets.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== 顶栏 ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">HF</span>
+      <span class="brand-name">模型下载器</span>
+    </div>
+
+    <div class="search-wrap">
+      <input id="repo-input" type="text" spellcheck="false"
+             placeholder="粘贴 https://huggingface.co/用户名/仓库名，或直接输入 用户名/仓库名">
+      <button id="btn-parse" class="btn primary">解析</button>
+      <button id="btn-home-top" class="btn" title="返回主页" disabled>⌂ 主页</button>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="btn-theme" class="btn tool-btn" title="切换深色/浅色主题">
+        <span id="theme-icon" class="tool-ico">🌙</span>
+        <span id="theme-label" class="tool-txt">深色</span>
+      </button>
+      <button id="btn-settings" class="btn tool-btn" title="打开设置">
+        <span class="tool-ico">⚙</span>
+        <span class="tool-txt">设置</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== 仓库信息条 ===== -->
+  <div id="repo-bar" class="repo-bar hidden">
+    <button id="btn-home" class="btn ghost sm home-btn" title="返回主页">⌂ 主页</button>
+    <div class="repo-title">
+      <span id="repo-name" class="repo-name"></span>
+      <span id="repo-rev" class="pill"></span>
+      <span id="repo-gated" class="pill warn hidden">需要授权</span>
+    </div>
+    <div class="repo-stats">
+      <span id="stat-files"></span>
+      <span id="stat-size"></span>
+      <span id="stat-dl"></span>
+    </div>
+  </div>
+
+  <!-- ===== 主工作区 ===== -->
+  <main class="workspace">
+    <aside class="tree-pane">
+      <div class="pane-head">
+        <span>目录结构</span>
+        <button id="btn-expand-all" class="mini" title="全部展开">⊞</button>
+      </div>
+      <div id="tree" class="tree-body" role="tree"></div>
+    </aside>
+
+    <div class="splitter" id="splitter"></div>
+
+    <section class="list-pane">
+      <nav class="crumb" id="crumb"></nav>
+
+      <div class="toolbar">
+        <label class="chk-label">
+          <input type="checkbox" id="chk-all"> 全选
+        </label>
+        <button id="btn-invert" class="mini-btn">反选</button>
+        <input id="filter" class="filter-input" type="text" placeholder="筛选当前目录…">
+        <span class="spacer"></span>
+        <span id="sel-stat" class="sel-stat">已选 0 项 · 0 B</span>
+        <button id="btn-dest" class="mini-btn" title="更改下载目录">下载到…</button>
+        <button id="btn-start" class="btn primary sm" disabled>开始下载</button>
+      </div>
+
+      <div class="list-head">
+        <span class="c-chk"></span>
+        <span class="c-ico"></span>
+        <span class="c-name">名称</span>
+        <span class="c-size">大小</span>
+        <span class="c-type">类型</span>
+      </div>
+
+      <!-- 空状态提示与文件列表互斥：有仓库时显示列表，否则显示提示 -->
+      <div id="empty-hint" class="empty-hint">
+        <div class="empty-icon">↓</div>
+        <div class="empty-title">粘贴模型地址开始</div>
+        <div class="empty-sub">支持 huggingface.co / hf-mirror.com 链接，或直接输入 用户名/仓库名</div>
+        <!-- 最近解析成功的历史（动态生成；首次使用时显示内置示例） -->
+        <div class="empty-examples" id="parse-history">
+          <div class="ex-skeleton">stabilityai/stable-diffusion-xl-base-1.0</div>
+          <div class="ex-skeleton">black-forest-labs/FLUX.1-dev</div>
+          <div class="ex-skeleton">Qwen/Qwen3-8B</div>
+        </div>
+      </div>
+
+      <div id="files" class="list-body hidden" role="listbox"></div>
+    </section>
+  </main>
+
+  <!-- ===== 下载队列 ===== -->
+  <footer class="queue-pane" id="queue-pane">
+    <div class="queue-head">
+      <button id="btn-toggle-queue" class="mini" title="收起/展开">▾</button>
+      <span class="queue-title">下载队列</span>
+      <span id="queue-count" class="pill"></span>
+      <span class="spacer"></span>
+      <span id="q-speed" class="q-stat">0 B/s</span>
+      <span id="q-eta" class="q-stat"></span>
+      <button id="btn-clear-done" class="mini-btn">清除已完成</button>
+    </div>
+    <div id="queue" class="queue-body"></div>
+  </footer>
+
+</div>
+
+<!-- ===== 设置弹窗 ===== -->
+<div id="modal-settings" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <span>设置</span>
+      <button id="btn-close-settings" class="mini">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <label>下载目录</label>
+        <div class="row">
+          <input id="set-dest" type="text" readonly>
+          <button id="btn-pick-dest" class="mini-btn">浏览…</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>目录结构</label>
+        <div class="radio-group">
+          <label class="radio">
+            <input type="radio" name="layout" value="repo" id="set-layout-repo">
+            <span>带仓库名子目录<em>下载\仓库名\vae\xxx.safetensors</em></span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="layout" value="flat" id="set-layout-flat">
+            <span>扁平化<em>下载\仓库名\xxx.safetensors（去掉中间目录）</em></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>镜像站</label>
+        <input id="set-mirror" type="text" spellcheck="false" placeholder="https://hf-mirror.com">
+        <div class="hint">国内直连 huggingface.co 不可用。镜像失效时可在这里换。</div>
+      </div>
+
+      <div class="field">
+        <label>并发设置</label>
+        <div class="grid3">
+          <div class="num-field">
+            <span>同时下载文件</span>
+            <input id="set-maxfiles" type="number" min="1" max="8">
+          </div>
+          <div class="num-field">
+            <span>单文件分块</span>
+            <input id="set-chunks" type="number" min="1" max="16">
+          </div>
+          <div class="num-field">
+            <span>总连接数</span>
+            <input id="set-conns" type="number" min="1" max="32">
+          </div>
+        </div>
+        <div class="hint">弱网建议把总连接数调低（如 8），否则连接之间会互相拖慢。</div>
+      </div>
+
+      <div class="field">
+        <label>下载历史</label>
+        <div class="row">
+          <button id="btn-hist" class="mini-btn">查看历史</button>
+          <button id="btn-hist-clear" class="mini-btn danger">清空历史</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button id="btn-open-data" class="mini-btn">打开数据目录</button>
+      <span class="spacer"></span>
+      <button id="btn-save-settings" class="btn primary sm">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 历史弹窗 ===== -->
+<div id="modal-history" class="modal hidden">
+  <div class="modal-card wide">
+    <div class="modal-head">
+      <span>下载历史</span>
+      <button id="btn-close-history" class="mini">✕</button>
+    </div>
+    <div id="history-body" class="modal-body history-body"></div>
+  </div>
+</div>
+
+<!-- ===== 提示条 ===== -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/fmt.js"></script>
+<script src="js/model.js"></script>
+<script src="js/tree-view.js"></script>
+<script src="js/list-view.js"></script>
+<script src="js/queue-view.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
