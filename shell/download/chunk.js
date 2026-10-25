@@ -42,6 +42,12 @@ function sleep(ms, task) {
 /** 把响应体按显式偏移写进共享的预分配文件 */
 async function pump(res, task, chunk, ctx, startPos) {
   let pos = startPos;
+
+  // 关键：把 chunk.done 对齐到本次实际的起始位置。
+  // 上次若在中途抛异常，chunk.done 已累加但 pos 没同步，
+  // 不对齐会导致重试时重复累加、触发 OVERRUN 误判。
+  chunk.done = startPos - chunk.start;
+
   for await (const buf of res) {
     if (task.abortReason) {
       try { res.destroy(); } catch {}
