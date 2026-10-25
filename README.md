@@ -51,7 +51,7 @@
 
 ### 下载
 
-从 [Releases](../../releases) 下载 `HF下载器-免安装版-vX.X.X.zip`，解压到任意目录，双击 `HF下载器.exe`。
+从 [Releases](../../releases/latest) 下载 `HF-Downloader-vX.X.X-portable.zip`，解压到任意目录，双击 `HF下载器.exe`。
 
 无需安装，不写注册表，不污染 `%APPDATA%`。所有配置和数据都在 exe 同级的 `_数据\` 目录，整个文件夹拷走就能带走全部设置。
 
