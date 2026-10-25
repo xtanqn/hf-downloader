@@ -165,7 +165,7 @@ class DownloadManager {
 
       if (layout === 'comfyui') {
         // vae/diffusion_pytorch_model.safetensors → {models}\vae\diffusion_pytorch_model.safetensors
-        const mapped = comfyRelPath(it.path);
+        const mapped = comfyRelPath(it.path, { legacyUnetDir: this.settings.legacyUnetDir });
         if (!mapped) {
           skipped.push({ path: it.path, reason: '无法归类到 ComfyUI 目录' });
           continue;
