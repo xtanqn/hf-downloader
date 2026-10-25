@@ -542,6 +542,7 @@
     $('set-layout-flat').checked = layout === 'flat';
     $('set-layout-comfyui').checked = layout === 'comfyui';
     $('set-comfyui-dir').value = s.comfyuiDir || '';
+    $('set-legacy-unet').checked = s.legacyUnetDir === true;
     updateComfyuiRow();
   }
 
@@ -550,6 +551,7 @@
     const on = $('set-layout-comfyui').checked;
     $('comfyui-dir-row').classList.toggle('hidden', !on);
     $('comfyui-hint').classList.toggle('hidden', !on);
+    $('legacy-unet-row').classList.toggle('hidden', !on);
   }
 
   async function saveSettings() {
@@ -558,6 +560,7 @@
       destDir: $('set-dest').value.trim(),
       layout,
       comfyuiDir: $('set-comfyui-dir').value.trim(),
+      legacyUnetDir: $('set-legacy-unet').checked,
       mirror: $('set-mirror').value.trim(),
       maxFiles: Number($('set-maxfiles').value),
       chunksPerFile: Number($('set-chunks').value),
