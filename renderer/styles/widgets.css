@@ -1,0 +1,432 @@
+/* ===== 目录树行 ===== */
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 27px;
+  padding-right: 10px;
+  cursor: pointer;
+  color: var(--fg-1);
+  font-size: 12.5px;
+  position: relative;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+.tree-row:hover {
+  background: var(--bg-hover);
+  color: var(--fg-0);
+}
+.tree-row.active {
+  background: var(--accent-bg);
+  color: var(--fg-0);
+}
+.tree-row.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.tree-row .caret {
+  width: 14px;
+  flex: 0 0 14px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--fg-2);
+  transition: color 0.1s;
+}
+.tree-row:hover .caret {
+  color: var(--fg-1);
+}
+.tree-row.leaf .caret {
+  visibility: hidden;
+}
+
+.tree-row .folder-ico {
+  width: 14px;
+  height: 11px;
+  flex: 0 0 14px;
+  border-radius: 1.5px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  position: relative;
+}
+.tree-row .folder-ico::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: -2px;
+  width: 6px;
+  height: 3px;
+  border-radius: 1.5px 1.5px 0 0;
+  background: inherit;
+}
+
+.tree-row .name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tree-row .count {
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+}
+.tree-row .count.partial {
+  color: var(--accent);
+}
+.tree-row .count.full {
+  color: var(--ok);
+}
+
+.tree-row input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+}
+.tree-row input[type="checkbox"]:checked::after {
+  left: 3px;
+  top: 0.5px;
+  width: 3.5px;
+  height: 7px;
+}
+.tree-row input[type="checkbox"]:indeterminate::after {
+  left: 2px;
+  top: 5px;
+  width: 6px;
+}
+
+/* ===== 文件列表行 ===== */
+.file-row {
+  display: grid;
+  grid-template-columns: 34px 34px 1fr 110px 90px;
+  align-items: center;
+  padding: 0 14px;
+  height: 30px;
+  cursor: default;
+  color: var(--fg-1);
+  font-size: 12.5px;
+  border-bottom: 1px solid transparent;
+  transition: background 0.1s;
+}
+.file-row:hover {
+  background: var(--bg-1);
+  color: var(--fg-0);
+}
+.file-row.checked {
+  background: var(--accent-bg);
+  color: var(--fg-0);
+}
+.file-row.dir {
+  cursor: pointer;
+}
+
+.file-row .c-chk {
+  display: flex;
+  align-items: center;
+}
+.file-row .c-ico {
+  display: flex;
+  align-items: center;
+}
+.file-row .c-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 12px;
+}
+.file-row .c-name .dir-name {
+  color: var(--fg-0);
+}
+.file-row .c-size {
+  text-align: right;
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+  padding-right: 12px;
+  font-size: 12px;
+}
+.file-row .c-type {
+  color: var(--fg-2);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 文件夹图标（CSS 画，不用图片） */
+.folder-icon {
+  width: 16px;
+  height: 13px;
+  background: var(--fg-2);
+  border-radius: 2px;
+  position: relative;
+  flex: 0 0 16px;
+}
+.folder-icon::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: -3px;
+  width: 7px;
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  background: inherit;
+}
+
+/* 扩展名徽章 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--mono);
+  letter-spacing: -0.2px;
+  background: var(--bg-3);
+  color: var(--fg-1);
+  flex: 0 0 auto;
+}
+.badge[data-t="st"]   { background: var(--badge-st-bg); color: var(--badge-st-fg); }
+.badge[data-t="bin"]  { background: var(--badge-bin-bg); color: var(--badge-bin-fg); }
+.badge[data-t="json"] { background: var(--badge-json-bg); color: var(--badge-json-fg); }
+.badge[data-t="txt"]  { background: var(--badge-txt-bg); color: var(--badge-txt-fg); }
+.badge[data-t="onnx"] { background: var(--badge-onnx-bg); color: var(--badge-onnx-fg); }
+.badge[data-t="gguf"] { background: var(--badge-gguf-bg); color: var(--badge-gguf-fg); }
+.badge[data-t="img"]  { background: var(--badge-img-bg); color: var(--badge-img-fg); }
+.badge[data-t="bin2"] { background: var(--badge-bin2-bg); color: var(--badge-bin2-fg); }
+
+/* ===== 队列行 ===== */
+.queue-row {
+  display: grid;
+  grid-template-columns: 1fr 260px 130px 90px 140px;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12px;
+  transition: background 0.1s;
+}
+.queue-row:hover {
+  background: var(--bg-2);
+}
+
+.q-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.q-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-0);
+}
+.q-sub {
+  font-size: 11px;
+  color: var(--fg-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.q-sub.err {
+  color: var(--err);
+}
+
+.q-bar-wrap {
+  height: 6px;
+  background: var(--bg-3);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.q-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.22s linear;
+}
+.q-bar.done {
+  background: var(--ok);
+}
+.q-bar.err {
+  background: var(--err);
+}
+.q-bar.paused {
+  background: var(--warn);
+}
+
+.q-pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-1);
+  font-size: 11.5px;
+  text-align: right;
+}
+.q-speed {
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-2);
+  font-size: 11.5px;
+  text-align: right;
+}
+.q-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.q-status {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-size: 10.5px;
+  line-height: 1.7;
+  background: var(--bg-3);
+  color: var(--fg-1);
+}
+.q-status.downloading { background: var(--accent-bg); color: var(--accent); }
+.q-status.done        { background: var(--badge-st-bg); color: var(--ok); }
+.q-status.paused      { background: var(--badge-bin-bg); color: var(--warn); }
+.q-status.error       { background: var(--badge-gguf-bg); color: var(--err); }
+.q-status.preparing   { background: rgba(154, 164, 181, 0.12); color: var(--fg-1); }
+
+/* ===== 设置表单 ===== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.field > label {
+  font-size: 12.5px;
+  color: var(--fg-0);
+  font-weight: 500;
+}
+.field .row {
+  display: flex;
+  gap: 8px;
+}
+.field .row input {
+  flex: 1 1 auto;
+}
+.hint {
+  font-size: 11.5px;
+  color: var(--fg-2);
+  line-height: 1.6;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  cursor: pointer;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.12s, background 0.12s;
+}
+.radio:hover {
+  background: var(--bg-2);
+}
+.radio:has(input:checked) {
+  border-color: var(--accent-dim);
+  background: var(--accent-bg);
+}
+.radio span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12.5px;
+  color: var(--fg-0);
+}
+.radio em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--fg-2);
+  font-family: var(--mono);
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.num-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.num-field span {
+  font-size: 11.5px;
+  color: var(--fg-2);
+}
+.num-field input {
+  height: 32px;
+}
+
+/* ===== 历史 ===== */
+.history-body {
+  gap: 0 !important;
+  padding: 0 !important;
+}
+.hist-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 200px;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12px;
+}
+.hist-row:hover {
+  background: var(--bg-2);
+}
+.hist-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.hist-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-0);
+}
+.hist-repo {
+  font-size: 11px;
+  color: var(--fg-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hist-size {
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  text-align: right;
+}
+.hist-act {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.hist-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--fg-2);
+  font-size: 12.5px;
+}
