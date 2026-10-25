@@ -174,15 +174,30 @@ async function runTask(task, mgr) {
   }
 }
 
-/** 由 Manager 调用，包一层 promise 便于 pause 等待 */
+/**
+ * 由 Manager 调用，包一层 promise 便于 pause 等待。
+ *
+ * 防重入：同一任务并发跑两遍会各自持有 FileHandle 往同一偏移写，
+ * 表现为「下载完成」与「写入超出分块范围」同时出现，且文件可能损坏。
+ * 这里用 _running 标记硬性拦住。
+ */
 function startTask(task, mgr) {
+  if (task._running) return task._runPromise || Promise.resolve();
+
+  task._running = true;
   task.meter = task.meter || new SpeedMeter(3000);
   task.abortReason = null;
-  const p = runTask(task, mgr).catch((e) => {
-    task.status = 'error';
-    task.error = (e && e.message) || String(e);
-    mgr.emitTask(task);
-  });
+
+  const p = runTask(task, mgr)
+    .catch((e) => {
+      task.status = 'error';
+      task.error = (e && e.message) || String(e);
+      mgr.emitTask(task);
+    })
+    .finally(() => {
+      task._running = false;
+    });
+
   task._runPromise = p;
   return p;
 }
