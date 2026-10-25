@@ -7,7 +7,8 @@ const { SETTINGS_FILE, APP_ROOT } = require('./paths');
 
 const DEFAULTS = {
   destDir: path.join(APP_ROOT, '下载'),
-  flatLayout: false, // false = 带仓库名子目录；true = 扁平化
+  layout: 'repo', // 'repo' 带仓库名 | 'flat' 扁平化 | 'comfyui' ComfyUI 分类
+  comfyuiDir: '', // ComfyUI 模式下的根目录（如 E:\ComfyUI\models）
   mirror: 'https://hf-mirror.com',
   maxFiles: 3,
   chunksPerFile: 8,
@@ -24,7 +25,10 @@ function clampInt(v, lo, hi, dflt) {
 function normalize(raw) {
   const s = { ...DEFAULTS, ...(raw || {}) };
   s.destDir = String(s.destDir || DEFAULTS.destDir);
-  s.flatLayout = s.flatLayout === true;
+  // 兼容旧版 flatLayout 布尔值
+  if (raw && raw.flatLayout === true && !raw.layout) s.layout = 'flat';
+  if (!['repo', 'flat', 'comfyui'].includes(s.layout)) s.layout = 'repo';
+  s.comfyuiDir = String(s.comfyuiDir || '').trim();
   s.mirror = String(s.mirror || DEFAULTS.mirror).trim().replace(/\/+$/, '') || DEFAULTS.mirror;
   if (!/^https?:\/\//i.test(s.mirror)) s.mirror = 'https://' + s.mirror;
   s.maxFiles = clampInt(s.maxFiles, 1, 8, DEFAULTS.maxFiles);
