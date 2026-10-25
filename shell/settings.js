@@ -9,6 +9,7 @@ const DEFAULTS = {
   destDir: path.join(APP_ROOT, '下载'),
   layout: 'repo', // 'repo' 带仓库名 | 'flat' 扁平化 | 'comfyui' ComfyUI 分类
   comfyuiDir: '', // ComfyUI 模式下的根目录（如 E:\ComfyUI\models）
+  legacyUnetDir: false, // 旧版 ComfyUI：unet 落到 unet\ 而不是 diffusion_models\
   mirror: 'https://hf-mirror.com',
   maxFiles: 3,
   chunksPerFile: 8,
@@ -29,6 +30,7 @@ function normalize(raw) {
   if (raw && raw.flatLayout === true && !raw.layout) s.layout = 'flat';
   if (!['repo', 'flat', 'comfyui'].includes(s.layout)) s.layout = 'repo';
   s.comfyuiDir = String(s.comfyuiDir || '').trim();
+  s.legacyUnetDir = s.legacyUnetDir === true;
   s.mirror = String(s.mirror || DEFAULTS.mirror).trim().replace(/\/+$/, '') || DEFAULTS.mirror;
   if (!/^https?:\/\//i.test(s.mirror)) s.mirror = 'https://' + s.mirror;
   s.maxFiles = clampInt(s.maxFiles, 1, 8, DEFAULTS.maxFiles);
