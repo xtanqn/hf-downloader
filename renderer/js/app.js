@@ -283,6 +283,15 @@
       const r = await window.hf.pickDir();
       if (r.ok && r.data) $('set-dest').value = r.data;
     });
+
+    // 目录结构 radio：切到 comfyui 时展开目录选择行
+    for (const el of document.querySelectorAll('input[name="layout"]')) {
+      el.addEventListener('change', updateComfyuiRow);
+    }
+    $('btn-pick-comfyui').addEventListener('click', async () => {
+      const r = await window.hf.pickDir();
+      if (r.ok && r.data) $('set-comfyui-dir').value = r.data;
+    });
     $('btn-open-data').addEventListener('click', () => window.hf.openDataDir());
 
     // 历史
@@ -450,10 +459,19 @@
   }
 
   /* ---------- 下载目录 ---------- */
+  /** 当前布局下实际生效的落盘根目录 */
+  function effectiveDest() {
+    const s = state.settings;
+    if (!s) return '';
+    if ((s.layout || 'repo') === 'comfyui') return s.comfyuiDir || s.destDir;
+    return s.destDir;
+  }
+
   function updateDestButton() {
-    const d = state.settings ? state.settings.destDir : '';
+    const d = effectiveDest();
     const btn = $('btn-dest');
-    btn.textContent = d ? `下载到：${shortenPath(d)}` : '下载到…';
+    const mode = state.settings && state.settings.layout === 'comfyui' ? '（ComfyUI 分类）' : '';
+    btn.textContent = d ? `下载到：${shortenPath(d)}${mode}` : '下载到…';
     btn.title = d || '点击选择下载目录';
   }
 
@@ -492,7 +510,7 @@
       items,
       repo: state.repo,
       rev: state.rev,
-      destDir: state.settings.destDir,
+      destDir: effectiveDest(),
     });
 
     if (!r.ok) {
@@ -519,18 +537,31 @@
     $('set-maxfiles').value = s.maxFiles;
     $('set-chunks').value = s.chunksPerFile;
     $('set-conns').value = s.maxConnections;
-    $('set-layout-repo').checked = !s.flatLayout;
-    $('set-layout-flat').checked = !!s.flatLayout;
+    const layout = s.layout || (s.flatLayout ? 'flat' : 'repo');
+    $('set-layout-repo').checked = layout === 'repo';
+    $('set-layout-flat').checked = layout === 'flat';
+    $('set-layout-comfyui').checked = layout === 'comfyui';
+    $('set-comfyui-dir').value = s.comfyuiDir || '';
+    updateComfyuiRow();
+  }
+
+  /** ComfyUI 目录行只在选中该模式时显示 */
+  function updateComfyuiRow() {
+    const on = $('set-layout-comfyui').checked;
+    $('comfyui-dir-row').classList.toggle('hidden', !on);
+    $('comfyui-hint').classList.toggle('hidden', !on);
   }
 
   async function saveSettings() {
+    const layout = document.querySelector('input[name="layout"]:checked').value;
     const patch = {
       destDir: $('set-dest').value.trim(),
+      layout,
+      comfyuiDir: $('set-comfyui-dir').value.trim(),
       mirror: $('set-mirror').value.trim(),
       maxFiles: Number($('set-maxfiles').value),
       chunksPerFile: Number($('set-chunks').value),
       maxConnections: Number($('set-conns').value),
-      flatLayout: $('set-layout-flat').checked,
     };
     const r = await window.hf.setSettings(patch);
     if (!r.ok) {
