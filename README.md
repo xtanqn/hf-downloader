@@ -101,14 +101,32 @@ SDXL 仓库有 57 个文件、71.6 GB，但你通常只需要其中几个：
 ComfyUI： E:\ComfyUI\models\vae\model.safetensors   ← 直接进对应分类
 ```
 
-**ComfyUI 分类目录**：把路径设为 ComfyUI 的 `models` 文件夹后，按仓库内目录自动归类——
-`vae\*` → `models\vae\`，`unet\*` → `models\unet\`，`lora` → `models\loras\`，
-根目录的大模型文件 → `models\checkpoints\`，无法归类的进 `models\_其他\`。
+**ComfyUI 分类目录**：把路径设为 ComfyUI 的 `models` 文件夹后，按仓库内目录自动归类：
 
-```
-带仓库名：下载\stable-diffusion-xl-base-1.0\vae\model.safetensors
-扁平化：  下载\stable-diffusion-xl-base-1.0\model.safetensors
-```
+| 仓库内目录 | 落盘位置 |
+|---|---|
+| `vae/*`、`vae_decoder/*`、`vae_encoder/*` | `models\vae\` |
+| `unet/*`、`unet2/*`、`diffusion_models/*` | `models\diffusion_models\` |
+| `unet_gguf/*` | `models\unet_gguf\` |
+| `lora`、`loras` | `models\loras\` |
+| `controlnet/*` | `models\controlnet\` |
+| `clip/*` | `models\clip\` |
+| `text_encoder/*`、`text_encoders/*` | `models\text_encoders\` |
+| `clip_vision/*` | `models\clip_vision\` |
+| `upscale_models/*` | `models\upscale_models\` |
+| `latent_upscale_models/*` | `models\latent_upscale_models\` |
+| `embeddings/*` | `models\embeddings\` |
+| `model_patches/*` | `models\model_patches\` |
+| 仓库根目录大模型（`.safetensors` `.ckpt` `.pt` `.pth`） | `models\checkpoints\` |
+| 仓库根目录 `.gguf` | `models\gguf\` |
+| 其余（`tokenizer` / `scheduler` 等 diffusers 组件） | `models\_其他\` 保留原结构 |
+
+> **关于 `unet` 与 `diffusion_models`**
+>
+> 2024 年中之后 ComfyUI 把 `unet\` 改名为 `diffusion_models\`（两个目录都还能加载，但社区实际在用后者）。
+> HF 上的 diffusers 仓库（SDXL / FLUX / SD3 等）目录名仍叫 `unet\`，所以这里默认映射到 `diffusion_models\`。
+>
+> 如果你的 ComfyUI 是旧版（只有 `unet\`），在设置里勾选「使用旧版目录名 `unet\`」即可切回。
 
 ## 从源码构建
 
