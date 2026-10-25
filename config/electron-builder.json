@@ -1,0 +1,45 @@
+{
+  "appId": "com.chaoge.hfdownloader",
+  "productName": "HF下载器",
+  "directories": {
+    "output": "dist",
+    "buildResources": "resources"
+  },
+
+  "asar": true,
+  "npmRebuild": false,
+
+  "electronLanguages": [
+    "zh-CN",
+    "en-US"
+  ],
+
+  "files": [
+    "shell/**/*",
+    "renderer/**/*",
+    "preload.js",
+    "package.json",
+
+    "!node/**/*",
+    "!node_modules/**/*",
+    "!dist/**/*",
+    "!scripts/**/*",
+    "!config/**/*",
+    "!_数据/**/*",
+    "!resources/**/*",
+    "!**/*.md",
+    "!**/*.zip",
+    "!**/*.rar",
+    "!**/*.bak",
+    "!**/*.bak2",
+    "!**/*.bak_*",
+    "!.gitignore",
+    "!.npmrc",
+    "!package-lock.json"
+  ],
+
+  "win": {
+    "icon": "resources/icon.ico",
+    "target": ["dir"]
+  }
+}
