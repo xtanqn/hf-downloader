@@ -81,12 +81,13 @@
         <button id="btn-start" class="btn primary sm" disabled>开始下载</button>
       </div>
 
-      <div class="list-head">
+      <div class="list-head" id="list-head">
         <span class="c-chk"></span>
         <span class="c-ico"></span>
-        <span class="c-name">名称</span>
-        <span class="c-size">大小</span>
-        <span class="c-type">类型</span>
+        <span class="c-name resizable" data-col="name">名称<span class="col-grip"></span></span>
+        <span class="c-size resizable" data-col="size">大小<span class="col-grip"></span></span>
+        <span class="c-type resizable" data-col="type">类型<span class="col-grip"></span></span>
+        <span class="c-date resizable" data-col="date">日期<span class="col-grip"></span></span>
       </div>
 
       <!-- 空状态提示与文件列表互斥：有仓库时显示列表，否则显示提示 -->
