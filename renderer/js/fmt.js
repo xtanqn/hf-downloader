@@ -43,6 +43,29 @@ const Fmt = (() => {
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 
+  /** HF lastCommit.date（ISO）→ 本地日期，今天/昨天显示相对，其余显示 YYYY-MM-DD */
+  function date(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    const now = new Date();
+    const dayMs = 86400000;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const that = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diff = Math.round((today - that) / dayMs);
+    if (diff === 0) return '今天';
+    if (diff === 1) return '昨天';
+    if (diff > 1 && diff < 7) return `${diff} 天前`;
+    const p = (x) => String(x).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  /** 完整时间，用于 tooltip */
+  function dateFull(iso) {
+    if (!iso) return '';
+    return time(iso);
+  }
+
   /** 按扩展名给徽章分类 */
   function extInfo(name) {
     const i = name.lastIndexOf('.');
@@ -83,5 +106,5 @@ const Fmt = (() => {
     return ext.toUpperCase() + ' 文件';
   }
 
-  return { bytes, speed, eta, count, time, extInfo, typeLabel };
+  return { bytes, speed, eta, count, time, date, dateFull, extInfo, typeLabel };
 })();
