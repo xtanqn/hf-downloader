@@ -136,32 +136,63 @@ async function fetchRepoInfo(mirror, repo) {
   };
 }
 
-/** 拉递归文件树 */
-async function fetchTree(mirror, repo, rev) {
-  // 显式 limit=1000：默认虽无分页，但传了更保险，避免默认上限带来的隐性截断
-  const url = `${mirrorBase(mirror)}/api/models/${repo}/tree/${encodeURIComponent(rev)}`
-    + '?recursive=true&expand=false&limit=1000';
-  const { res } = await requestStream(url, { timeout: 30000 });
-  if (res.statusCode !== 200) {
-    const e = classifyHttp(res.statusCode, repo);
-    try { res.destroy(); } catch {}
-    throw e;
+/**
+ * 拉递归文件树（带分页）
+ *
+ * expand=false：不需要每文件日期，一次 limit=1000 基本一页拿完。
+ * expand=true ：会拿到 lastCommit.date，但镜像站强制分页（每页 50），
+ *               必须跟 Link: rel="next" 头翻页。
+ *
+ * 为什么不总是用 expand=true：大仓库（几百个文件）要多打十几次 API，
+ * 而镜像站 API 限流是 500 次/300 秒。所以做成可选。
+ */
+async function fetchTree(mirror, repo, rev, expand) {
+  const wantExpand = expand === true;
+  let url = `${mirrorBase(mirror)}/api/models/${repo}/tree/${encodeURIComponent(rev)}`
+    + `?recursive=true&expand=${wantExpand}`;
+  if (!wantExpand) url += '&limit=1000';
+
+  const all = [];
+  let pages = 0;
+  const MAX_PAGES = 200; // 防御性上限：1000 文件 × 50/页
+
+  while (url && pages < MAX_PAGES) {
+    const { res } = await requestStream(url, { timeout: 30000 });
+    if (res.statusCode !== 200) {
+      const e = classifyHttp(res.statusCode, repo);
+      try { res.destroy(); } catch {}
+      throw e;
+    }
+
+    // 记住下一页链接（Link: <...>; rel="next"）
+    let nextUrl = null;
+    const link = res.headers['link'];
+    if (link) {
+      const m = String(link).match(/<([^>]+)>\s*;\s*rel="next"/);
+      if (m) nextUrl = m[1];
+    }
+
+    const text = await readAll(res);
+    let arr;
+    try {
+      arr = JSON.parse(text);
+    } catch {
+      throw new HfError('BAD_JSON', '文件树解析失败，镜像站可能返回了错误页', { retryable: true });
+    }
+    if (!Array.isArray(arr)) {
+      throw new HfError('BAD_JSON', '文件树格式异常');
+    }
+    all.push(...arr);
+    pages++;
+    url = nextUrl;
   }
-  const text = await readAll(res);
-  let arr;
-  try {
-    arr = JSON.parse(text);
-  } catch {
-    throw new HfError('BAD_JSON', '文件树解析失败，镜像站可能返回了错误页', { retryable: true });
-  }
-  if (!Array.isArray(arr)) {
-    throw new HfError('BAD_JSON', '文件树格式异常');
-  }
-  return arr;
+
+  return all;
 }
 
-/** 带缓存的加载 */
-async function loadRepo(mirror, repo, rev, force) {
+/** 带缓存的加载。expand=true 时额外拉每文件最后提交日期 */
+async function loadRepo(mirror, repo, rev, force, expand) {
+  const wantExpand = expand === true;
   const key = `${mirrorBase(mirror)}|${repo}@${rev}`;
   if (!force) {
     const hit = cacheGet(key);
@@ -170,7 +201,7 @@ async function loadRepo(mirror, repo, rev, force) {
 
   const [repoInfo, entries] = await Promise.all([
     fetchRepoInfo(mirror, repo),
-    fetchTree(mirror, repo, rev),
+    fetchTree(mirror, repo, rev, wantExpand),
   ]);
 
   // 目录项 size 恒为 0，体积只能从文件项累加
