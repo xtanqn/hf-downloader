@@ -150,7 +150,14 @@ class ListView {
     cType.className = 'c-type';
     cType.textContent = Fmt.typeLabel(node.name, isDir);
 
-    row.append(cChk, cIco, cName, cSize, cType);
+    /* 日期（最后提交时间，目录取该目录下文件的最新值） */
+    const cDate = document.createElement('span');
+    cDate.className = 'c-date';
+    const d = isDir ? node.lastDate : node.lastCommit;
+    cDate.textContent = d ? Fmt.date(d) : '—';
+    if (d) cDate.title = Fmt.dateFull(d);
+
+    row.append(cChk, cIco, cName, cSize, cType, cDate);
 
     if (isDir) {
       row.addEventListener('click', () => {
