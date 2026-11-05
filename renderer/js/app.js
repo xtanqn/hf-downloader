@@ -212,6 +212,8 @@
     bindPushEvents();
     updateDestButton();
     renderParseHistory();
+    restoreColWidths();
+    setupColumnResize();
   }
 
   /* ---------- 事件绑定 ---------- */
@@ -353,6 +355,91 @@
     });
   }
 
+  /* ---------- 列宽拖动 ---------- */
+  /* 宽度存在 :root 的 --col-* 变量里，表头和数据行共用同一组变量，
+     拖表头分隔线时整列一起变。最小/最大宽度防止把列挤没。 */
+  const COL_LIMITS = {
+    name: { min: 160, max: 2000 },
+    size: { min: 60, max: 400 },
+    type: { min: 50, max: 400 },
+    date: { min: 56, max: 400 },
+  };
+
+  function setupColumnResize() {
+    const head = $('list-head');
+    if (!head) return;
+
+    let drag = null; // { col, startX, startW }
+
+    head.querySelectorAll('.col-grip').forEach((grip) => {
+      grip.addEventListener('mousedown', (e) => {
+        const col = grip.parentElement.dataset.col;
+        if (!col) return;
+        // name 列是 1fr，没有固定像素宽：取当前实际渲染宽度作为起点
+        const startW = col === 'name'
+          ? grip.parentElement.getBoundingClientRect().width
+          : getColWidth(col);
+        drag = { col, startX: e.clientX, startW };
+        grip.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!drag) return;
+      const lim = COL_LIMITS[drag.col];
+      if (!lim) return;
+      let w;
+      if (drag.col === 'name') {
+        // name 列的 grip 在列的右缘：往右拖 = 列变宽
+        // 但右邻列（size）也在 grid 里，name 用固定像素后 1fr 消失，
+        // 剩余空间分配给谁由后面 setColWidth 决定——这里直接给 name 固定像素
+        w = drag.startW + (e.clientX - drag.startX);
+      } else {
+        w = drag.startW + (e.clientX - drag.startX);
+      }
+      w = Math.max(lim.min, Math.min(lim.max, w));
+      setColWidth(drag.col, w);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!drag) return;
+      head.querySelectorAll('.col-grip').forEach((g) => g.classList.remove('dragging'));
+      document.body.style.cursor = '';
+      drag = null;
+    });
+  }
+
+  function getColWidth(col) {
+    if (col === 'name') return 'auto';
+    const v = getComputedStyle(document.documentElement).getPropertyValue(`--col-${col}`).trim();
+    return parseInt(v, 10) || 0;
+  }
+
+  function setColWidth(col, w) {
+    document.documentElement.style.setProperty(`--col-${col}`, w + 'px');
+    try {
+      localStorage.setItem('hf-col-' + col, String(w));
+    } catch {}
+  }
+
+  /** 恢复上次的列宽 */
+  function restoreColWidths() {
+    for (const col of Object.keys(COL_LIMITS)) {
+      try {
+        const v = localStorage.getItem('hf-col-' + col);
+        if (v) {
+          const n = parseInt(v, 10);
+          if (n >= COL_LIMITS[col].min && n <= COL_LIMITS[col].max) {
+            document.documentElement.style.setProperty(`--col-${col}`, n + 'px');
+          }
+        }
+      } catch {}
+    }
+  }
+
   /* ---------- 解析 ---------- */
   async function doParse() {
     const input = $('repo-input').value.trim();
@@ -367,7 +454,8 @@
     $('btn-parse').textContent = '解析中…';
 
     try {
-      const r = await window.hf.load({ input });
+      // 带日期模式：expand=true 会多几次分页请求，换取每文件的上传日期
+      const r = await window.hf.load({ input, expand: true });
       if (!r.ok) {
         toast(r.error, 'err');
         return;
