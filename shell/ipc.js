@@ -25,7 +25,7 @@ function register(ctx) {
     const rev = p.rev || parsed.rev || 'main';
 
     log.info(`加载仓库 ${parsed.id}@${rev}（镜像 ${mirror}）`);
-    const result = await loadRepo(mirror, parsed.id, rev, !!p.force);
+    const result = await loadRepo(mirror, parsed.id, rev, !!p.force, p.expand === true);
 
     // 成功解析后记入历史，供主页「最近解析」使用
     parseHistory.add({
