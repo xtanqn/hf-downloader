@@ -274,10 +274,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 列表表头 */
+/* 列表表头 —— 列宽可拖动：宽度存在 --col-* 变量里，表头和行共用 */
 .list-head {
   display: grid;
-  grid-template-columns: 34px 34px 1fr 110px 90px;
+  grid-template-columns: 34px 34px var(--col-name, 1fr) var(--col-size, 110px) var(--col-type, 90px) var(--col-date, 96px);
   align-items: center;
   padding: 0 14px;
   height: 30px;
@@ -289,6 +289,38 @@
 }
 .list-head .c-size {
   text-align: right;
+}
+.list-head .c-date {
+  text-align: right;
+}
+
+/* 可拖动列头 */
+.list-head .resizable {
+  position: relative;
+}
+.col-grip {
+  position: absolute;
+  right: -7px;
+  top: 0;
+  width: 14px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 2;
+}
+.col-grip::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 1px;
+  background: transparent;
+  transition: background 0.12s;
+}
+.col-grip:hover::after,
+.col-grip.dragging::after {
+  background: var(--accent);
 }
 
 /* 列表主体 */
