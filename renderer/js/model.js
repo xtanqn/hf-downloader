@@ -58,6 +58,7 @@ class TreeModel {
         parent,
         size: Number(e.size) || 0,
         oid: e.lfs && e.lfs.oid ? e.lfs.oid : e.oid || '',
+        lastCommit: e.lastCommit && e.lastCommit.date ? e.lastCommit.date : '',
         checked: false,
       };
       parent.children.push(node);
@@ -69,14 +70,19 @@ class TreeModel {
       n.fileCount = 0;
       n.totalSize = 0;
       n.checkedCount = 0;
+      n.lastDate = '';
       for (const c of n.children) {
         if (c.type === 'dir') {
           roll(c);
           n.fileCount += c.fileCount;
           n.totalSize += c.totalSize;
+          if (c.lastDate && c.lastDate > n.lastDate) n.lastDate = c.lastDate;
         } else {
           n.fileCount++;
           n.totalSize += c.size;
+          if (n.lastDate === '' || (c.lastCommit && c.lastCommit > n.lastDate)) {
+            n.lastDate = c.lastCommit || n.lastDate;
+          }
         }
       }
       n.children.sort((a, b) => {
